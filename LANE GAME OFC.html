@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratório Virtual do Peixe-Zebra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        canvas {
+            background-color: #f0f9ff;
+            border: 4px solid #334155;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: yellow;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle-anim 0.7s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle-anim {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(2) rotate(90deg); }
+        }
+
+        #intro-modal {
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .speech-bubble {
+            position: relative;
+            background: #ffffff;
+            border-radius: .4em;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border: 20px solid transparent;
+            border-top-color: #ffffff;
+            border-bottom: 0;
+            border-left: 0;
+            margin-left: -10px;
+            margin-bottom: -20px;
+            transform: translateX(-50%) rotate(90deg);
+        }
+        
+        .mode-btn-active {
+            ring-width: 4px;
+            ring-color: #3b82f6;
+            border-color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 overflow-y-auto">
+
+    <!-- Modal de Introdução -->
+    <div id="intro-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-transparent w-full max-w-2xl">
+            <div class="speech-bubble mb-8">
+                <h3 id="intro-title" class="text-2xl font-bold text-slate-800 mb-4 text-center">Olá, Cientista! 🐠</h3>
+                <div id="intro-text" class="text-slate-700 mb-6 text-center text-xl leading-relaxed">Eu sou o peixe-<b>ZÉ</b>bra (<i>Danio rerio</i>)! Bem-vindo ao meu laboratório virtual.</div>
+                <div class="text-center">
+                    <button id="intro-next" class="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">Próximo</button>
+                    <button id="intro-start" class="hidden px-6 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Começar o Jogo!</button>
+                </div>
+            </div>
+            
+            <!-- Zé em SVG -->
+            <div class="flex justify-center mt-4">
+                <svg width="420" height="140" viewBox="0 0 300 120" class="-mt-4 drop-shadow-2xl">
+                  <defs>
+                    <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+                      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#d1d5db;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="finGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#fcd34d;stop-opacity:0.9" />
+                      <stop offset="100%" style="stop-color:#fbbf24;stop-opacity:0.5" />
+                    </linearGradient>
+                    <linearGradient id="stripeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                       <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+                       <stop offset="80%" style="stop-color:#2563eb;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+
+                  <path d="M230,60 C260,40 290,40 290,45 C280,60 280,60 290,75 C290,80 260,80 230,60" fill="url(#finGradient)" stroke="#d97706" stroke-width="0.5" />
+                  <path d="M235,60 L285,50" stroke="#1d4ed8" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+                  <path d="M235,60 L285,70" stroke="#1d4ed8" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+                  <path d="M235,60 L290,60" stroke="#1d4ed8" stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+
+                  <path d="M130,40 C150,25 180,25 190,45" fill="url(#finGradient)" stroke="#d97706" stroke-width="0.5" />
+                  <path d="M135,82 C155,94 185,89 195,77" fill="url(#finGradient)" stroke="#d97706" stroke-width="0.5" />
+                  <path d="M85,80 C75,95 100,100 110,80" fill="#fcd34d" stroke="#d97706" stroke-width="0.5" opacity="0.6" />
+
+                  <path d="M25,60 Q40,40 80,38 Q150,35 230,60 Q150,90 80,85 Q40,82 25,60 Z" fill="url(#bodyGradient)" stroke="#9ca3af" stroke-width="1" />
+
+                  <g clip-path="url(#bodyClip)">
+                      <clipPath id="bodyClip">
+                          <path d="M25,60 Q40,40 80,38 Q150,35 230,60 Q150,90 80,85 Q40,82 25,60 Z" />
+                      </clipPath>
+                      
+                      <path d="M85,42 C130,40 180,41 230,48" stroke="url(#stripeGradient)" stroke-width="3" fill="none" stroke-linecap="round" />
+                      <path d="M80,48 C130,46 180,47 240,54" stroke="url(#stripeGradient)" stroke-width="4" fill="none" stroke-linecap="round" />
+                      <path d="M78,54 C130,52 180,53 240,60" stroke="url(#stripeGradient)" stroke-width="4" fill="none" stroke-linecap="round" />
+                      <path d="M76,60 C130,58 180,60 240,66" stroke="url(#stripeGradient)" stroke-width="4" fill="none" stroke-linecap="round" />
+                      <path d="M78,66 C130,64 180,66 240,72" stroke="url(#stripeGradient)" stroke-width="5" fill="none" stroke-linecap="round" />
+                      <path d="M85,72 C130,70 180,72 235,78" stroke="url(#stripeGradient)" stroke-width="4" fill="none" stroke-linecap="round" />
+                      <path d="M95,78 C135,76 175,77 220,82" stroke="url(#stripeGradient)" stroke-width="3" fill="none" stroke-linecap="round" />
+                  </g>
+
+                  <path d="M80,45 Q70,60 80,80" stroke="#9ca3af" stroke-width="1.5" fill="none" opacity="0.6" />
+                  <path d="M85,78 C75,93 105,98 115,78" fill="url(#finGradient)" stroke="#d97706" stroke-width="0.5" opacity="0.9" />
+
+                  <circle cx="50" cy="55" r="9" fill="white" stroke="#e5e7eb" stroke-width="2" />
+                  <circle cx="52" cy="54" r="5" fill="black" />
+                  <circle cx="54" cy="52" r="2" fill="white" opacity="0.9" />
+
+                  <path d="M22,64 Q28,68 34,60" stroke="#6b7280" stroke-width="2" fill="none" stroke-linecap="round" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conteúdo Principal -->
+    <div id="game-content" class="w-full max-w-6xl mx-auto opacity-0 transition-opacity duration-500">
+        <h1 class="text-3xl font-bold text-center text-slate-800 mb-4">Laboratório Virtual do Peixe-Zebra</h1>
+        <p class="text-center text-slate-600 mb-8 text-xl max-w-4xl mx-auto leading-relaxed">
+            Explore a Neuropsicofarmacologia utilizando o peixe-zebra: administre compostos e veja o efeito no comportamento nos diferentes testes!
+        </p>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Esquerda: Aquário e Controles -->
+            <div class="lg:w-2/3 w-full">
+                <div class="bg-white p-4 rounded-xl shadow-lg border border-slate-200">
+                    <h2 class="text-xl font-semibold text-slate-700 mb-2">Aquário de Teste</h2>
+                    <p class="text-sm text-slate-500 mb-4">Observe o comportamento do peixe.</p>
+                    
+                    <canvas id="aquarium" width="700" height="400" class="rounded-lg w-full cursor-crosshair"></canvas>
+                    
+                    <!-- SEÇÃO DE TESTES (MODO) -->
+                    <div class="mt-6 mb-6 border-b border-slate-100 pb-6">
+                        <h3 class="text-center text-slate-700 font-bold text-lg mb-3 uppercase tracking-wide">Testes</h3>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <button id="mode-standard" class="px-6 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition focus:outline-none mode-btn-active font-medium">Tanque Novo</button>
+                            <button id="mode-light-dark" class="px-6 py-2 bg-gray-700 text-white rounded-lg shadow hover:bg-gray-800 transition focus:outline-none font-medium">Claro/Escuro</button>
+                            <button id="mode-open-field" class="px-6 py-2 bg-purple-700 text-white rounded-lg shadow hover:bg-purple-800 transition focus:outline-none font-medium">Campo Aberto</button>
+                        </div>
+                    </div>
+
+                    <!-- SEÇÃO DE COMPOSTOS -->
+                    <div class="mb-2">
+                        <h3 class="text-center text-slate-700 font-bold text-lg mb-3 uppercase tracking-wide">Compostos</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            <button data-state="normal" class="quiz-btn p-3 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 font-medium text-sm">
+                                Repor (Controle)
+                            </button>
+                            <button data-state="anxiety" class="quiz-btn p-3 bg-yellow-500 text-white rounded-lg shadow hover:bg-yellow-600 transition focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 font-medium text-sm">
+                                Induzir Ansiedade
+                            </button>
+                            <button data-state="anxiolytic" class="quiz-btn p-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 font-medium text-sm">
+                                Dar Ansiolítico
+                            </button>
+                            <button data-state="stimulant" class="quiz-btn p-3 bg-red-500 text-white rounded-lg shadow hover:bg-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 font-medium text-sm">
+                                Dar Estimulante
+                            </button>
+                            <button data-state="sedative" class="quiz-btn p-3 bg-purple-600 text-white rounded-lg shadow hover:bg-purple-700 transition focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 font-medium text-sm">
+                                Dar Sedativo
+                            </button>
+                            <button data-state="alcohol_low" class="quiz-btn p-3 bg-indigo-400 text-white rounded-lg shadow hover:bg-indigo-500 transition focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-opacity-75 font-medium text-sm">
+                                Dar Álcool (Baixa Dose)
+                            </button>
+                            <button data-state="alcohol_high" class="quiz-btn p-3 bg-indigo-700 text-white rounded-lg shadow hover:bg-indigo-800 transition focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-opacity-75 font-medium text-sm">
+                                Dar Álcool (Alta Dose)
+                            </button>
+                            <button data-state="epilepsy" class="quiz-btn p-3 bg-orange-600 text-white rounded-lg shadow hover:bg-orange-700 transition focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-75 font-medium text-sm">
+                                Induzir Epilepsia (PTZ)
+                            </button>
+                            <button data-state="anticonvulsant" class="quiz-btn p-3 bg-teal-500 text-white rounded-lg shadow hover:bg-teal-600 transition focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-opacity-75 font-medium text-sm sm:col-span-4 md:col-span-1">
+                                Dar Anticonvulsivante
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direita: Análise e Quizzes -->
+            <div class="lg:w-1/3 w-full">
+                <div id="info-box" class="bg-white p-6 rounded-xl shadow-lg border border-slate-200 sticky top-6 min-h-[400px]">
+                    <div id="analysis-placeholder">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-3">Painel de Análise</h2>
+                        <p class="text-slate-600 text-lg">Clique num botão para administrar um composto e ver a análise neurocientífica aqui.</p>
+                    </div>
+
+                    <!-- TEMPLATE DE ANÁLISE -->
+                    <div id="analysis-template" class="hidden space-y-4">
+                        <h2 id="info-title" class="text-3xl font-bold text-slate-800 mb-3"></h2>
+                        <div>
+                            <h3 class="font-bold text-slate-700 text-xl">Comportamento Observado:</h3>
+                            <p id="info-behavior" class="text-slate-600 text-lg leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-700 text-xl">Mecanismo Neural (A Neurociência):</h3>
+                            <p id="info-mechanism" class="text-slate-600 text-lg leading-relaxed"></p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-700 text-xl">Exemplo de Composto/Situação:</h3>
+                            <p id="info-example" class="text-slate-600 text-lg leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- QUIZ -->
+                    <div id="quiz-template" class="hidden">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-4">Quiz Rápido!</h2>
+                        <p id="quiz-question" class="text-slate-700 mb-4 text-lg font-medium leading-relaxed"></p>
+                        <div id="quiz-options" class="flex flex-col gap-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('aquarium');
+            const ctx = canvas.getContext('2d');
+            let originalW = 700, originalH = 400;
+            let aquariumMode = 'standard';
+            let currentQuizData = null, sparkles = [], pipetteAnimationActive = false, pipetteAnimationStartTime = 0;
+            let overlayAnimationActive = false, overlayAnimationType = null, overlayAnimationStartTime = 0;
+
+            const infoBox = document.getElementById('info-box');
+            const analysisPlaceholder = document.getElementById('analysis-placeholder');
+            const analysisTemplate = document.getElementById('analysis-template');
+            const infoTitle = document.getElementById('info-title');
+            const infoBehavior = document.getElementById('info-behavior');
+            const infoMechanism = document.getElementById('info-mechanism');
+            const infoExample = document.getElementById('info-example');
+            const modeSpecificInfoDiv = document.getElementById('mode-specific-info');
+            const modeSpecificTitle = document.getElementById('mode-specific-title');
+            const infoModeSpecific = document.getElementById('info-mode-specific');
+            const quizTemplate = document.getElementById('quiz-template');
+            const quizQuestion = document.getElementById('quiz-question');
+            const quizOptions = document.getElementById('quiz-options');
+            
+            const btnStandard = document.getElementById('mode-standard');
+            const btnLightDark = document.getElementById('mode-light-dark');
+            const btnOpenField = document.getElementById('mode-open-field');
+            const quizButtons = document.querySelectorAll('.quiz-btn');
+
+            let fish = {
+                x: 350, y: 200, 
+                vx: 4, vy: 3, 
+                size: 20, color: '#C0C0C0',
+                stripes: ['#00008B', '#00008B', '#00008B'],
+                state: 'normal', isCelebrating: false, celebrationStep: 0,
+            };
+
+            const stateData = {
+                'normal': {
+                    analysis: {
+                        title: 'Estado de Controle (Normal)',
+                        behavior: 'No teste do tanque novo, o peixe controle apresenta um comportamento exploratório natural: começa cauteloso no fundo (geotaxia) e, ao habituar-se, passa a explorar todo o aquário, incluindo a superfície, de forma organizada.',
+                        mechanism: 'O cérebro está em equilíbrio (homeostasia). Os sistemas excitatórios (Glutamato), o acelerador, e inibitórios (GABA), o freio, funcionam em harmonia, com níveis normais de Cortisol (hormônio do estresse).Esse equilíbrio mantém o cérebro funcionando de forma estável, permitindo comportamento exploratório normal e respostas adequadas ao ambiente.',
+                        example: 'Condições ideais de água no aquário.',
+                        lightDarkBehavior: 'No teste do Claro/Escuro, o peixe normal prefere instintivamente o lado escuro para se proteger (escototaxia), mas faz incursões regulares e calmas ao lado claro para explorar o ambiente.',
+                        openFieldBehavior: 'No teste de Campo Aberto, ele inicialmente nada perto das paredes por segurança (tigmotaxia), mas logo começa a explorar a região central do aparato progressivamente.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, o estado de controle (normal) caracteriza-se por:", opts: [{t:"Nadar só no fundo e congelar", c:false}, {t:"Explorar todo o aquário, incluindo a superfície, após se habituar", c:true}, {t:"Nadar muito rápido em círculos sem parar", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, um peixe em estado normal tende a:", opts: [{t:"Ficar paralisado de medo no escuro", c:false}, {t:"Ter preferência pelo escuro, mas explorar os dois lados de forma calma", c:true}, {t:"Preferir ficar sempre no lado claro", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o comportamento normal caracteriza-se por:", opts: [{t:"Ficar sempre nas bordas do tanque", c:false}, {t:"Começar pelas bordas e passar a explorar o centro gradualmente", c:true}, {t:"Nadar descontroladamente apenas no centro", c:false}] }
+                    }
+                },
+                'anxiety': {
+                    analysis: {
+                        title: 'Estado: Ansiedade',
+                        behavior: 'O peixe apresenta sinais de medo intenso no tanque novo: fica imobilizado (congelamento), realiza movimentos erráticos ou restringe-se totalmente ao fundo do aquário (geotaxia extrema), evitando explorar o topo.',
+                        mechanism: 'Quando o peixe percebe perigo, seja de forma natural ou por meio de substâncias que enganam o cérebro e fazem com que desequilibre os mensageiros químicos, o sistema de alarme do cérebro é ativado. Esse sistema, chamado eixo HPI (Hipotálamo-Pituitária-Interrenal), envia sinais pelo corpo que libertam Cortisol, o principal hormônio do estresse. O cortisol prepara o organismo para reagir rapidamente ao perigo, aumentando o estado de alerta e desencadeando comportamentos de defesa como fuga ou imobilização.',
+                        example: 'Estresse agudo, excesso de Cafeína, ou substâncias de alarme natural.',
+                        lightDarkBehavior: 'O peixe apresenta sinais de medo e comportamento defensivo. Ele evita a área iluminada, permanecendo a maior parte do tempo no compartimento escuro. Pode ocorrer imobilização, nado agitado próximo às paredes ou movimentos erráticos ao aproximar-se da zona clara.',
+                        openFieldBehavior: 'Quando a ansiedade é induzida, o peixe apresenta tigmotaxia, permanecendo próximo às paredes da arena e evitando a zona central. Essa área aberta faz o animal sentir-se mais exposto e vulnerável a predadores. Como resultado, o peixe tende a explorar apenas as bordas do ambiente e pode apresentar episódios de imobilidade.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, a indução de ansiedade causa:", opts: [{t:"Indiferença entre fundo e topo do aquário", c:false}, {t:"Ficar no fundo do aquário, com nado agitado ou imobilidade (congelamento)", c:true}, {t:"Nado lento na parte de cima do aparato", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, o estado de ansiedade induz:", opts: [{t:"Evitação da área iluminada e preferência pelo lado escuro", c:true}, {t:"Atividade na zona clara", c:false}, {t:"Indiferença total ao ambiente claro ou escuro", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o estado de ansiedade resulta em:", opts: [{t:"Natação contínua e calma no centro da arena", c:false}, {t:"Forte preferência pelas bordas (tigmotaxia) para se proteger", c:true}, {t:"Perda da coordenação motora", c:false}] }
+                    }
+                },
+                'anxiolytic': {
+                    analysis: {
+                        title: 'Composto: Ansiolítico',
+                        behavior: 'O peixe apresenta redução do comportamento ansioso no tanque novo. Ele entra na parte superior do aquário mais rapidamente, aumenta o tempo a explorar o topo e demonstra menor freezing ou natação errática.',
+                        mechanism: 'Os ansiolíticos ajudam o cérebro a "acalmar". Eles reforçam os travas naturais do cérebro, principalmente um sistema envolvendo o chamado GABA, que reduz a atividade excessiva dos neurônios. Alguns também aumentam a ação da serotonina, um mensageiro químico ligado ao equilíbrio emocional. Com isso, o cérebro deixa de interpretar o ambiente como perigoso e a resposta de estresse/ ansiedade diminui.',
+                        example: 'Diazepam, Fluoxetina, Buspirona.',
+                        lightDarkBehavior: 'A droga reduz drasticamente a aversão natural à luz no teste Claro/Escuro. O peixe passa muito mais tempo a explorar a área clara de forma calma, demonstrando coragem e reduzindo o tempo de refúgio no escuro.',
+                        openFieldBehavior: 'O comportamento de contornar as paredes (tigmotaxia) desaparece rapidamente no campo aberto. O peixe explora o centro da arena de forma livre, relaxada e sem sinais de estresse.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, a administração de um ansiolítico causa:", opts: [{t:"Imobilidade no fundo do tanque", c:false}, {t:"Perda do medo e exploração rápida e tranquila da superfície", c:true}, {t:"Nado muito agitado entre fundo e topo", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, a administração de um ansiolítico induz:", opts: [{t:"Evitar o compartimento claro a todo custo", c:false}, {t:"Aumento significativo do tempo passado na área clara", c:true}, {t:"Nado agitado para os dois compartimentos", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o efeito de um ansiolítico promove:", opts: [{t:"Aumento notável na exploração do centro da arena", c:true}, {t:"Fuga desesperada para as bordas", c:false}, {t:"Paralisia e congelamento total", c:false}] }
+                    }
+                },
+                'stimulant': {
+                    analysis: {
+                        title: 'Composto: Estimulante',
+                        behavior: 'Observa-se hiperatividade locomotora marcante. O peixe nada a velocidades muito altas no tanque novo, mudando de direção rapidamente, e pode apresentar movimentos estereotipados, por exemplo nado em círculos, e exploração desorganizada.',
+                        mechanism: 'Os estimulantes aumentam a quantidade de mensageiros químicos excitadores no cérebro, especialmente Dopamina e Noradrenalina. Esses sinais fazem os neurônios dispararem mais rapidamente, aumentando o estado de alerta, a energia e a atividade do sistema nervoso.',
+                        example: 'Cafeína (em doses moderadas), Anfetaminas, Cocaína.',
+                        lightDarkBehavior: 'A agitação motora extrema faz com que ele cruze a fronteira entre o claro e o escuro repetidas vezes, em alta velocidade e de forma frenética e desorganizada, ignorando a preferência natural pelo escuro.',
+                        openFieldBehavior: 'Ocorre um aumento drástico na velocidade e distância percorrida na arena circular. O peixe nada muito rápido por todo o aparato, muitas vezes realizando círculos acelerados ou nado frenético margeando a borda.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, a administração de um estimulante causa:", opts: [{t:"Nado lento", c:false}, {t:"Atividade locomtora acentuada e nado rápido sem pausas", c:true}, {t:"Comportamento de repouso no fundo", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, um composto estimulante induz:", opts: [{t:"Congelamento total no compartimento escuro", c:false}, {t:"Transições excessivas e velozes entre os dois lados", c:true}, {t:"Natação lenta apenas no lado claro", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o uso de estimulantes resulta em:", opts: [{t:"Imobilidade no centro da arena", c:false}, {t:"Aumento extremo da velocidade e da distância percorrida", c:true}, {t:"Movimento cauteloso e organizado", c:false}] }
+                    }
+                },
+                'sedative': {
+                    analysis: {
+                        title: 'Composto: Sedativo',
+                        behavior: 'Há uma depressão motora evidente no tanque novo. O peixe não perde totalmente a consciência, mas nada de forma letárgica, muito mais lenta e demonstra pouca motivação para explorar o aquário.',
+                        mechanism: 'Os sedativos reduzem a atividade do cérebro ao aumentar a ação de um mensageiro químico chamado GABA. Esse mensageiro funciona como uma trava natural do sistema nervoso, diminuindo a atividade dos neurônios e deixando o organismo mais calmo e lento, "sedando" o organismo.',
+                        example: 'Barbitúricos, altas doses de Diazepam ou anestésicos em subdose.',
+                        lightDarkBehavior: 'A exploração do ambiente claro/escuro cai drasticamente. Ele tende a ficar parado no lado escuro ou a nadar de forma extremamente vagarosa, sem procurar a transição entre os compartimentos.',
+                        openFieldBehavior: 'A velocidade média e a distância percorrida diminuem severamente no campo aberto. O peixe nada muito devagar acompanhando as bordas, principalmente.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, a administração de um sedativo causa:", opts: [{t:"Letargia, nado lento e diminuição drástica da locomoção", c:true}, {t:"Nado rápido até à superfície", c:false}, {t:"Convulsões e espasmos", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, a administração de um sedativo induz:", opts: [{t:"Baixa atividade motora e falta de interesse exploratório", c:true}, {t:"Ansiedade intensa na transição das cores", c:false}, {t:"Exploração hiperativa e destemida da luz", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o composto sedativo resulta em:", opts: [{t:"Nado acelerado", c:false}, {t:"Redução evidente da movimentação geral", c:true}, {t:"Muita atividade nas margens do tanque", c:false}] }
+                    }
+                },
+                'alcohol_low': {
+                    analysis: {
+                        title: 'Composto: Álcool (Baixa Dose)',
+                        behavior: 'O álcool em baixa concentração age de forma muito parecida com um ansiolítico no tanque novo, mas com uma leve euforia associada. O peixe perde a inibição, explora a superfície rapidamente e mostra movimentos mais soltos.',
+                        mechanism: 'Em baixas doses, o álcool aumenta a ação de um mensageiro químico chamado GABA, que reduz a atividade excessiva do cérebro e diminui a sensação de estresse/medo. Ao mesmo tempo, ele estimula a libertação de dopamina, um mensageiro químico ligado ao sistema de recompensa. Essa combinação provoca relaxamento, desinibição e diminuição da ansiedade.',
+                        example: 'Etanol em baixa concentração (0.25% - 0.5% na água).',
+                        lightDarkBehavior: 'A desinibição bloqueia o instinto de se esconder no escuro. O peixe ignora o medo natural da luz e passa a nadar mais tempo na área iluminada.',
+                        openFieldBehavior: 'Em baixa dose, o álcool reduz a ansiedade e a aversão ao espaço aberto. O peixe passa a explorar a zona central da arena com mais frequência, demonstrando menor tigmotaxia (menos atividade na borda). Também pode ocorrer um leve aumento na atividade locomotora, resultando em maior exploração do tanque'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, o álcool em baixa dose provoca:", opts: [{t:"Nado lento e exploração desorganizada", c:false}, {t:"Efeito ansiolítico, com exploração desinibida e ágil da superfície", c:true}, {t:"Indução de ansiedade, com um nado mais imóvel", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, a baixa dose de álcool induz:", opts: [{t:"Perda da aversão à luz, explorando a área clara com agilidade", c:true}, {t:"Aumento da ansiedade e do medo, aumentando a atividade na zona escura", c:false}, {t:"Nado lento e quase imóvel", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, o álcool em baixa dose resulta em:", opts: [{t:"Maior atividade na borda do aquário", c:false}, {t:"Maior exploração do centro", c:true}, {t:"Diminuição na atividade locomotora", c:false}] }
+                    }
+                },
+                'alcohol_high': {
+                    analysis: {
+                        title: 'Composto: Álcool (Alta Dose)',
+                        behavior: 'O peixe apresenta sinais de intoxicação severa no tanque novo. O nado torna-se descoordenado (ataxia), com perda de equilíbrio e redução significativa da velocidade de locomoção devido ao efeito depressor do etanol.',
+                        mechanism: 'Em altas doses, o álcool reduz fortemente a atividade do cérebro. Ele aumenta muito a ação do mensageiro químico GABA, que desacelera os neurônios, e também bloqueia receptores excitatórios NMDA, que são usados para estimular o cérebro. Ou seja, ele aumenta a "trava" e diminui os "aceleradores" do cérebro e essa combinação diminui a comunicação entre neurônios e prejudica a coordenação dos movimentos.',
+                        example: 'Etanol em concentração elevada (> 1.0% na água).',
+                        lightDarkBehavior: 'A grave falta de coordenação (ataxia) impede-o de explorar os ambientes adequadamente. Ele apresenta movimentos lentos e pode até afundar ou deitar de lado no fundo, independentemente de estar no claro ou no escuro.',
+                        openFieldBehavior: 'Em altas doses, o álcool causa forte prejuízo motor. O peixe apresenta grande dificuldade para nadar, com movimentos descoordenados e perda de equilíbrio. A atividade locomotora diminui bastante, podendo ocorrer nado irregular, perda de postura ou períodos de imobilidade.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, o álcool em alta dose resulta em:", opts: [{t:"Aumento da atividade, com maior exploração", c:false}, {t:"Nado desorganizado e sedação motora", c:true}, {t:"Comportamento normal", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, a alta dose de álcool causa:", opts: [{t:"Prejuízo motor evidente, impedindo a exploração adequada do tanque", c:true}, {t:"Nado rápido entre os dois lados do tanque", c:false}, {t:"Nado normal", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, a alta dose de álcool induz:", opts: [{t:"Natação na zona central de forma coordenada", c:false}, {t:"Nado devagar e principalmente nas bordas", c:true}, {t:"Aumento da atividade locomotora", c:false}] }
+                    }
+                },
+                'epilepsy': {
+                    analysis: {
+                        title: 'Estado: Crise Epiléptica',
+                        behavior: 'O peixe sofre crises convulsivas agudas e evidentes. Ele passa por picos de hiperatividade descontrolada, rodopios (nado em espiral ou "parafuso"), espasmos corporais violentos e completa perda de controle da postura no tanque.',
+                        mechanism: 'Agentes convulsivantes convencionais frequentemente bloqueiam fisicamente os receptores GABA-A, que são responsáveis pelo controle inibitório. Sem essa "trava" neurológica, os neurônios disparam sem limites, criando uma "tempestade elétrica" no cérebro, gerando essa hiperexcitabilidade neuronal e a epilepsia.',
+                        example: 'Pentilenetetrazol (PTZ) — droga padrão para pesquisa de convulsões.',
+                        lightDarkBehavior: 'A percepção e a resposta ao ambiente (claro ou escuro) são totalmente perdidas durante a crise. O peixe sofre abalos musculares e nado violento e errático, apresentando convulsões.',
+                        openFieldBehavior: 'Durante uma crise epiléptica, o peixe apresenta episódios de hiperatividade seguidos por movimentos convulsivos, com rodopios, espasmos e perda de postura. O comportamento torna-se desorganizado e o peixe deixa de responder normalmente ao ambiente da arena.'
+                    },
+                    quiz: {
+                        standard: { q: "No teste do Tanque Novo, a indução de uma crise epiléptica (ex: com PTZ) provoca:", opts: [{t:"Sono e sedação imediatos", c:false}, {t:"Convulsões, nado com hiperatividade descontrolada", c:true}, {t:"Aumento na atividade exploratória, semelhante a um ansiolítico", c:false}] },
+                        light_dark: { q: "No teste do Claro/Escuro, durante a crise epiléptica, observa-se:", opts: [{t:"Maior atividade na zona escura do tanque", c:false}, {t:"Perda de resposta ao ambiente, com abalos motores violentos generalizados", c:true}, {t:"Nado maior na zona iluminada", c:false}] },
+                        open_field: { q: "No teste de Campo Aberto, a indução de epilepsia resulta em:", opts: [{t:"Movimentos lentos nas bordas do tanque", c:false}, {t:"Episódios convulsivos com evidente perda da postura", c:true}, {t:"Nado normal com exploração no centro do tanque", c:false}] }
+                    }
+                },
+                'anticonvulsant': {
+                analysis: {
+                    title: 'Composto: Anticonvulsivante',
+                    behavior: 'Se administrado preventivamente, o composto suprime ou atenua drasticamente a intensidade das convulsões. O nado em "parafuso" e os espasmos desaparecem, e o peixe recupera a locomoção mais estável no tanque.',
+                    mechanism: 'O fármaco atua restaurando o equilíbrio elétrico: seja potencializando a ação inibitória natural (GABA) ou bloqueando os canais de sódio e cálcio dos neurónios, impedindo a propagação da "tempestade elétrica".',
+                    example: 'Valproato de Sódio, Lítio, Diazepam (uso agudo para crise), Carbamazepina.',
+                    lightDarkBehavior: 'A proteção contra as convulsões permite que o peixe não perca o controle motor, voltando a demonstrar exploração calma e controlada entre os compartimentos claro e escuro sem abalos musculares.',
+                    openFieldBehavior: 'Após o tratamento anticonvulsivante, as convulsões diminuem ou desaparecem. O peixe recupera o controle da locomoção e volta a nadar de forma mais estável e organizada pela arena, com redução dos espasmos e melhora da coordenação motora.'
+                },
+                quiz: {
+                    standard: { q: "No teste do Tanque Novo, a administração prévia de um anticonvulsivante perante uma droga convulsivante resulta em:", opts: [{t:"Prevenção ou forte redução das convulsões, mantendo o controle da natação", c:true}, {t:"Potencialização extrema das convulsões", c:false}, {t:"As convulsões continuam sem alterar", c:false}] },
+                    light_dark: { q: "No teste do Claro/Escuro, a presença de anticonvulsivantes efetivos promove:", opts: [{t:"Diminuição da epilepsia, evitando os movimentos desgovernados", c:true}, {t:"Imobilidade", c:false}, {t:"Aumento da intensidade das convulsões", c:false}] },
+                    open_field: { q: "No teste de Campo Aberto, o tratamento com anticonvulsivante induz:", opts: [{t:"Aumento na atividade nas bordas do tanque", c:false}, {t:"Ausência das crises convulsivas e recuperação de um padrão motor mais organizado", c:true}, {t:"Nado lento na área central do tanque", c:false}] }
+                }
+            }
+        };
+
+            function resizeCanvas() {
+                const parent = canvas.parentElement;
+                const width = parent.clientWidth - 32; 
+                const height = width * (originalH / originalW);
+                canvas.width = width;
+                canvas.height = height;
+                if (fish) {
+                    if(fish.x > width) fish.x = width - 20;
+                    if(fish.y > height) fish.y = height - 20;
+                }
+            }
+            
+            function startOverlayAnimation(type) {
+                overlayAnimationType = type;
+                overlayAnimationStartTime = Date.now();
+                overlayAnimationActive = true;
+            }
+
+            function drawAquariumBackground() {
+                const w = canvas.width;
+                const h = canvas.height;
+
+                if (aquariumMode === 'open_field') {
+                    ctx.fillStyle = '#e2e8f0'; 
+                    ctx.fillRect(0, 0, w, h);
+                    
+                    const centerX = w / 2;
+                    const centerY = h / 2;
+                    const radius = (h / 2) - 10; 
+
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#ffffff'; 
+                    ctx.fill();
+                    ctx.lineWidth = 5;
+                    ctx.strokeStyle = '#94a3b8'; 
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, radius * 0.5, 0, 2 * Math.PI);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; 
+                    ctx.stroke();
+
+                } else if (aquariumMode === 'light_dark') {
+                    ctx.fillStyle = '#222222';
+                    ctx.fillRect(0, 0, w / 2, h);
+                    ctx.fillStyle = '#F5F5F5';
+                    ctx.fillRect(w / 2, 0, w / 2, h);
+                    ctx.beginPath();
+                    ctx.moveTo(w/2, 0);
+                    ctx.lineTo(w/2, h);
+                    ctx.strokeStyle = "#888";
+                    ctx.stroke();
+                } else {
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, '#87ceeb');
+                    gradient.addColorStop(1, '#a0c4ff');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, w, h);
+                }
+            }
+
+            function drawFish() {
+                const w = canvas.width; const h = canvas.height;
+                const sx = w / originalW; const sy = h / originalH;
+                
+                ctx.save();
+                ctx.translate(fish.x * sx, fish.y * sy);
+                
+                let angle = Math.atan2(fish.vy, fish.vx);
+                if (Math.abs(fish.vx)<0.1 && Math.abs(fish.vy)<0.1) {
+                    angle=0;
+                } else if (aquariumMode !== 'open_field') {
+                    let maxPitch = 45 * Math.PI / 180; 
+                    if (fish.vx >= 0) {
+                        if (angle > maxPitch) angle = maxPitch;
+                        if (angle < -maxPitch) angle = -maxPitch;
+                    } else {
+                        if (angle > 0) {
+                            if (angle < Math.PI - maxPitch) angle = Math.PI - maxPitch;
+                        } else {
+                            if (angle > -Math.PI + maxPitch) angle = -Math.PI + maxPitch;
+                        }
+                    }
+                }
+
+                ctx.rotate(angle);
+
+                if (fish.vx < 0) {
+                    ctx.scale(1, -1);
+                }
+
+                let color = (fish.state==='epilepsy') ? '#EF4444' : fish.color;
+                let s = fish.size * sx;
+
+                ctx.fillStyle = color; ctx.beginPath(); 
+                ctx.ellipse(0,0, s, s/3.0, 0, 0, 2*Math.PI); 
+                ctx.fill();
+                
+                ctx.fillStyle = fish.stripes[0]; ctx.fillRect(-s*0.7, -s/4, s * 1.4, s/10); ctx.fillRect(-s*0.6, 0, s*1.3, s/10); ctx.fillRect(-s*0.5, s/4, s*1.1, s/10);
+                
+                ctx.fillStyle = fish.stripes[1]; ctx.beginPath(); ctx.moveTo(-s*0.9,0); ctx.lineTo(-s*1.8, -s/1.8); ctx.lineTo(-s*1.8, s/1.8); ctx.closePath(); ctx.fill();
+                
+                ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(s/2.5, -s/6, s/5, 0, 2*Math.PI); ctx.fill();
+                ctx.fillStyle='black'; ctx.beginPath(); ctx.arc(s/2.5, -s/6, s/10, 0, 2*Math.PI); ctx.fill();
+                ctx.restore();
+            }
+
+            function drawOverlayAnimation() {
+                if(!overlayAnimationActive) return;
+                let p = (Date.now() - overlayAnimationStartTime) / 1000;
+                
+                let duration = (overlayAnimationType === 'reset') ? 1.5 : 1.0;
+                if(p >= duration) { overlayAnimationActive = false; return; }
+                
+                ctx.save();
+                let w = canvas.width;
+                let h = canvas.height;
+
+                if (overlayAnimationType === 'reset') {
+                    let alpha = 1.0;
+                    if(p > 1.0) alpha = 1.0 - (p - 1.0) * 2; 
+                    
+                    ctx.globalAlpha = Math.max(0, alpha);
+                    ctx.translate(w/2, h/2);
+                    
+                    let osdColor = "#00FF00"; 
+                    ctx.strokeStyle = osdColor;
+                    ctx.fillStyle = osdColor;
+                    ctx.lineWidth = 4;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = osdColor;
+
+                    let r = 40;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, r, 0.2, 1.8 * Math.PI); 
+                    ctx.stroke();
+
+                    let arrowAngle = 1.8 * Math.PI;
+                    let ax = Math.cos(arrowAngle) * r;
+                    let ay = Math.sin(arrowAngle) * r;
+                    
+                    ctx.save();
+                    ctx.translate(ax, ay);
+                    ctx.rotate(arrowAngle + Math.PI/2); 
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-10, -15);
+                    ctx.lineTo(10, -15);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+
+                    ctx.font = "bold 24px monospace";
+                    ctx.textAlign = "center";
+                    ctx.fillText("RESET", 0, 70);
+
+                } else {
+                    let progress = p / duration; 
+                    
+                    let startX = w + 50; let endX = w - 100;
+                    let startY = -50;    let endY = 50;
+                    
+                    let curX = startX + (endX - startX) * Math.sin(progress * Math.PI / 2);
+                    let curY = startY + (endY - startY) * Math.sin(progress * Math.PI / 2);
+                    
+                    ctx.translate(curX, curY);
+                    ctx.rotate(Math.PI / 6);
+
+                    // Pipeta
+                    ctx.fillStyle='#EEE'; ctx.fillRect(-10,-40,20,70);
+                    ctx.fillStyle='#2563EB'; ctx.fillRect(-12,-40,24,15);
+                    ctx.fillStyle='#FEF3C7'; ctx.beginPath(); ctx.moveTo(-5,30); ctx.lineTo(5,30); ctx.lineTo(2,70); ctx.lineTo(-2,70); ctx.fill();
+                    
+                    // Gota
+                    if(progress > 0.5 && progress < 0.9) {
+                        let dropProgress = (progress - 0.5) / 0.4; 
+                        let dropY = 70 + dropProgress * 200;
+                        ctx.fillStyle='#60A5FA'; 
+                        ctx.beginPath(); ctx.arc(0, dropY, 6, 0, 2*Math.PI); ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+
+            function updateFishBehavior() {
+                if(fish.isCelebrating) { updateCelebration(); fish.x+=fish.vx; fish.y+=fish.vy; return; }
+
+                let tVx = fish.vx, tVy = fish.vy;
+                const cx = originalW/2, cy = originalH/2; 
+                
+                if (aquariumMode === 'open_field') {
+                    const r = (originalH/2)-25;
+                    const dx = fish.x-cx, dy = fish.y-cy, dist = Math.sqrt(dx*dx+dy*dy);
+
+                    if(dist > r) {
+                        let nx = -dx/dist, ny = -dy/dist;
+                        fish.x += nx*2; fish.y += ny*2;
+                        fish.vx = nx*Math.abs(fish.vx)+(Math.random()-0.5);
+                        fish.vy = ny*Math.abs(fish.vy)+(Math.random()-0.5);
+                        tVx=fish.vx; tVy=fish.vy;
+                    }
+
+                    switch (fish.state) {
+                        case 'anxiety':
+                            if (dist < r * 0.7) { 
+                                tVx += (dx / dist) * 0.8; 
+                                tVy += (dy / dist) * 0.8;
+                            } else {
+                                tVx += -dy * 0.05; 
+                                tVy += dx * 0.05;
+                            }
+                            break;
+                            
+                        case 'anxiolytic':
+                        case 'alcohol_low':
+                            if (dist > r * 0.3) { 
+                                tVx += (cx - fish.x) * 0.025; 
+                                tVy += (cy - fish.y) * 0.025;
+                            } else {
+                                tVx += (Math.random() - 0.5) * 1.5;
+                                tVy += (Math.random() - 0.5) * 1.5;
+                            }
+                            if (fish.state === 'alcohol_low' && Math.random() < 0.05) {
+                                tVx += (Math.random() - 0.5) * 5;
+                                tVy += (Math.random() - 0.5) * 5;
+                            }
+                            if (Math.random() < 0.005) { 
+                                tVx -= (cx - fish.x) * 0.08;
+                                tVy -= (cy - fish.y) * 0.08;
+                            }
+                            break;
+                        
+                        case 'alcohol_high':
+                             if(dist < r*0.7) { tVx += (dx/dist)*0.3; tVy += (dy/dist)*0.3; } 
+                             else { tVx += -dy*0.01; tVy += dx*0.01; } 
+                            break;
+
+                        case 'normal':
+                        case 'anticonvulsant':
+                            if (Math.random() < 0.02) { 
+                                tVx += (cx - fish.x) * 0.01;
+                                tVy += (cy - fish.y) * 0.01;
+                            }
+                            break;
+                        
+                        case 'stimulant':
+                            let tx = -dy, ty = dx; 
+                            let len = Math.sqrt(tx*tx+ty*ty); if(len>0){tx/=len; ty/=len;}
+                            tVx = tx * 15; tVy = ty * 15; 
+                            
+                            if(dist > r*0.8) { tVx += (dx/dist)*2.5; tVy += (dy/dist)*2.5; } 
+                            else if(dist < r*0.4) { tVx -= (dx/dist)*2.5; tVy -= (dy/dist)*2.5; } 
+                            break;
+
+                        case 'sedative':
+                            if(dist < r * 0.6) { 
+                                tVx += (dx / dist) * 0.3; 
+                                tVy += (dy / dist) * 0.3;
+                            }
+                            tVx += -dy * 0.01;
+                            tVy += dx * 0.01;
+                            break;
+                    }
+
+                } else {
+                    if (fish.x < 10) { fish.x = 10; fish.vx = Math.abs(fish.vx) * 0.8; }
+                    if (fish.x > originalW - 10) { fish.x = originalW - 10; fish.vx = -Math.abs(fish.vx) * 0.8; }
+                    if (fish.y < 10) { fish.y = 10; fish.vy = Math.abs(fish.vy) * 0.8; }
+                    if (fish.y > originalH - 10) { fish.y = originalH - 10; fish.vy = -Math.abs(fish.vy) * 0.8; }
+
+                    switch (fish.state) {
+                        case 'anxiolytic':
+                        case 'alcohol_low':
+                            if (aquariumMode === 'light_dark') {
+                                if (fish.x < originalW * 0.5) tVx += 0.5; 
+                                if (fish.x > originalW * 0.9) tVx -= 0.3; 
+                                if (fish.state === 'alcohol_low' && Math.random() < 0.05) tVx += (Math.random() > 0.5 ? 1 : -1) * 4; 
+                                else if (Math.random() < 0.05) tVx += (Math.random() > 0.5 ? 1 : -1) * 2.5; 
+                                if (Math.random() < 0.005) tVx -= 8;
+                            } else {
+                                if (fish.y > originalH * 0.35) tVy -= 0.6; 
+                                if (fish.y < originalH * 0.1) tVy += 0.3; 
+                                
+                                if (Math.abs(fish.vx) < 2) tVx += Math.sign(fish.vx || 1) * 2;
+                                
+                                if (Math.abs(fish.vx) < 4 && Math.random() < 0.15) tVx += (Math.random() > 0.5 ? 1 : -1) * 4;
+                                if (Math.random() < 0.005) { 
+                                    tVy += 7; 
+                                    tVx += Math.sign(fish.vx || 1) * 4; 
+                                }
+                                if (fish.state === 'alcohol_low' && Math.random() < 0.05) { tVy -= 0.5; tVx += (Math.random() - 0.5) * 5; }
+                            }
+                            break;
+
+                        case 'normal':
+                        case 'anticonvulsant':
+                            if (aquariumMode === 'light_dark') {
+                                if (fish.x < originalW * 0.6) tVx += 0.2; 
+                            } else {
+                                if (fish.y > originalH * 0.5 && Math.random() < 0.02) tVy -= 0.3; 
+                                if (Math.abs(fish.vx) < 2 && Math.random() < 0.1) tVx += (Math.random() > 0.5 ? 1 : -1) * 2;
+                                
+                                if (Math.abs(fish.vx) < 1.5) tVx += Math.sign(fish.vx || 1) * 1.5;
+                            }
+                            break;
+
+                        case 'anxiety':
+                            if (aquariumMode === 'light_dark') {
+                                if (fish.x > originalW * 0.4) tVx -= 0.6; 
+                            } else {
+                                const bottomZone = originalH - 60;
+                                if (fish.y < bottomZone) {
+                                    tVy += 0.5;
+                                } else { 
+                                    tVy *= 0.5; 
+                                    if(Math.random() < 0.15) tVx += (Math.random() > 0.5 ? 1 : -1) * 4; 
+                                }
+                            }
+                            break;
+                        
+                        case 'sedative':
+                            if (aquariumMode === 'light_dark') {
+                                if (fish.x > originalW * 0.5) tVx -= 0.05; 
+                            } else {
+                                if (fish.y < originalH * 0.6) tVy += 0.2; 
+                                else { tVy *= 0.8; if (Math.abs(fish.vx) < 1 && Math.random() < 0.05) tVx += (Math.random() > 0.5 ? 1 : -1) * 1.5; }
+                            }
+                            break;
+
+                        case 'alcohol_high':
+                             if (aquariumMode === 'light_dark') {
+                                if (fish.x > originalW * 0.3) tVx -= 0.4;
+                            } else {
+                                if (fish.y < originalH - 40) tVy += 0.2;
+                            }
+                            break;
+                        
+                         case 'stimulant':
+                            if (aquariumMode === 'light_dark') {
+                                tVx += Math.sign(fish.vx || 1) * 4;
+                                if (Math.random() < 0.1) tVy += (Math.random() - 0.5) * 15;
+                            } else {
+                                tVx += Math.sign(fish.vx || 1) * 3;
+                                tVy += Math.sign(fish.vy || 1) * 3;
+                                if (Math.random() < 0.08) {
+                                    tVx = (Math.random() > 0.5 ? 15 : -15);
+                                    tVy = (Math.random() > 0.5 ? 10 : -10);
+                                }
+                            }
+                            break;
+                    }
+                }
+
+                if (Math.random() < 0.08 && fish.state !== 'stimulant') {
+                    tVx += (Math.random() - 0.5) * 1.5;
+                    tVy += (Math.random() - 0.5) * 1.5;
+                }
+
+                if (fish.state === 'anxiety') {
+                    if(Math.random() < 0.2) { 
+                        tVx += (Math.random()-0.5) * 5; 
+                        tVy += (Math.random()-0.5) * 5;
+                    }
+                }
+                
+                if (fish.state === 'epilepsy') {
+                    tVx += (Math.random() - 0.5) * 10;
+                    tVy += (Math.random() - 0.5) * 10;
+                }
+
+                if (fish.state === 'alcohol_low' && Math.random() < 0.1) {
+                     tVx += (Math.random() - 0.5) * 3;
+                     tVy += (Math.random() - 0.5) * 3;
+                }
+                
+                if (fish.state === 'alcohol_high') {
+                     if(Math.random() < 0.2) {
+                        tVx += (Math.random() - 0.5);
+                        tVy += (Math.random() - 0.5);
+                     }
+                     tVx *= 0.8; tVy *= 0.8; 
+                }
+
+                let ease = (['epilepsy','anxiety'].includes(fish.state)) ? 0.2 : 0.05; 
+                if (fish.state === 'normal' && Math.abs(fish.vx) < 1) ease = 0.1; 
+                if (fish.state === 'anxiolytic') ease = 0.12;
+                if (fish.state === 'alcohol_low') ease = 0.15; 
+                if (fish.state === 'stimulant') ease = 0.25; 
+
+                fish.vx += (tVx - fish.vx) * ease;
+                fish.vy += (tVy - fish.vy) * ease;
+
+                let max = 4; 
+                if(fish.state === 'anxiety') max = 5.5; 
+                if(fish.state === 'stimulant') max = 8.5; 
+                if(fish.state === 'epilepsy') max = 10;
+                if(fish.state === 'sedative') max = 1.5; 
+                if(fish.state === 'alcohol_high') max = 1.5; 
+                if(fish.state === 'anxiolytic') max = 5.5; 
+                if(fish.state === 'alcohol_low') max = 6.0; 
+
+                let speed = Math.sqrt(fish.vx*fish.vx + fish.vy*fish.vy);
+                if (speed > max) {
+                    let scale = max / speed;
+                    fish.vx = fish.vx * 0.9 + (fish.vx * scale) * 0.1; 
+                    fish.vy = fish.vy * 0.9 + (fish.vy * scale) * 0.1;
+                }
+
+                if(isNaN(fish.vx)) fish.vx=0; if(isNaN(fish.vy)) fish.vy=0;
+                fish.x += fish.vx; fish.y += fish.vy;
+            }
+
+            // Gerando um coração contínuo e perfeito através da sua equação paramétrica
+            const heartPath = [];
+            for (let t = Math.PI; t <= 3 * Math.PI; t += 0.12) {
+                let hx = 16 * Math.pow(Math.sin(t), 3);
+                let hy = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                heartPath.push({ x: 350 + hx * 11, y: 170 - hy * 11 }); // Centralizado e escalado
+            }
+
+            function updateCelebration() {
+                if (fish.celebrationStep >= heartPath.length) {
+                    fish.isCelebrating = false;
+                    fish.state = 'normal';
+                    showAnalysis(currentQuizData.state);
+                    return;
+                }
+
+                let target = heartPath[fish.celebrationStep];
+                let dx = target.x - fish.x;
+                let dy = target.y - fish.y;
+                let d = Math.sqrt(dx * dx + dy * dy);
+
+                // Quando está perto o suficiente do ponto atual, passa para o próximo
+                if (d < 18) {
+                    fish.celebrationStep++;
+                    if (fish.celebrationStep >= heartPath.length) {
+                        fish.isCelebrating = false;
+                        fish.state = 'normal';
+                        showAnalysis(currentQuizData.state);
+                        return;
+                    }
+                    target = heartPath[fish.celebrationStep];
+                    dx = target.x - fish.x;
+                    dy = target.y - fish.y;
+                    d = Math.sqrt(dx * dx + dy * dy);
+                }
+
+                // Em vez de mudar a velocidade instantaneamente (movimento reto e robótico),
+                // aplicamos uma "força de direção" (steering) para fazer curvas suaves.
+                let speed = 6.5;
+                let desiredVx = (dx / d) * speed;
+                let desiredVy = (dy / d) * speed;
+
+                // Se for o primeiro ponto (aproximação inicial), a força de curva é menor
+                // para que ele faça um arco largo e natural até a base do coração.
+                let steerForce = (fish.celebrationStep === 0) ? 0.04 : 0.18;
+
+                // Adiciona um movimento levemente ondulado na aproximação
+                if (fish.celebrationStep === 0) {
+                    desiredVx += Math.sin(Date.now() / 150) * 1.5;
+                    desiredVy += Math.cos(Date.now() / 150) * 1.5;
+                }
+
+                fish.vx += (desiredVx - fish.vx) * steerForce;
+                fish.vy += (desiredVy - fish.vy) * steerForce;
+
+                // Limite de velocidade de segurança
+                let currentSpeed = Math.sqrt(fish.vx * fish.vx + fish.vy * fish.vy);
+                if (currentSpeed > speed + 2) {
+                    fish.vx = (fish.vx / currentSpeed) * (speed + 2);
+                    fish.vy = (fish.vy / currentSpeed) * (speed + 2);
+                }
+
+                // Desenha as estrelinhas
+                if (Math.random() < 0.4) {
+                    sparkles.push({
+                        x: fish.x, y: fish.y, 
+                        vx: (Math.random() - 0.5) * 2.5, 
+                        vy: (Math.random() - 0.5) * 2.5, 
+                        l: 1
+                    });
+                }
+            }
+
+            function drawSparkles() {
+                const sx = canvas.width/originalW, sy = canvas.height/originalH;
+                for(let i=sparkles.length-1; i>=0; i--) {
+                    let s=sparkles[i]; s.x+=s.vx; s.y+=s.vy; s.l-=0.05;
+                    if(s.l<=0) sparkles.splice(i,1);
+                    else { ctx.fillStyle=`rgba(255,215,0,${s.l})`; ctx.beginPath(); ctx.arc(s.x*sx,s.y*sy,4,0,2*Math.PI); ctx.fill(); }
+                }
+            }
+
+            function showQuiz(state) {
+                let qData = stateData[state].quiz[aquariumMode === 'open_field' ? 'open_field' : (aquariumMode === 'light_dark' ? 'light_dark' : 'standard')];
+                currentQuizData = { state: state, correct: false };
+                quizQuestion.textContent = qData.q;
+                quizOptions.innerHTML = '';
+                qData.opts.forEach(o => {
+                    let btn = document.createElement('button');
+                    btn.className = "w-full p-4 bg-slate-200 text-slate-800 font-medium rounded-lg text-left hover:bg-slate-300 transition leading-relaxed text-lg";
+                    btn.textContent = o.t;
+                    btn.onclick = () => {
+                        if(o.c) {
+                            btn.classList.replace('bg-slate-200','bg-green-500'); 
+                            btn.classList.replace('text-slate-800','text-white'); 
+                            btn.textContent+=" ✅";
+                            fish.isCelebrating=true; fish.celebrationStep=0;
+                            Array.from(quizOptions.children).forEach(b=>b.disabled=true);
+                        } else {
+                            btn.classList.replace('bg-slate-200','bg-red-500'); 
+                            btn.classList.replace('text-slate-800','text-white'); 
+                            btn.textContent+=" ❌"; btn.disabled=true;
+                        }
+                    };
+                    quizOptions.appendChild(btn);
+                });
+                analysisPlaceholder.classList.add('hidden'); analysisTemplate.classList.add('hidden'); quizTemplate.classList.remove('hidden');
+            }
+
+            function showAnalysis(state) {
+                quizTemplate.classList.add('hidden'); analysisTemplate.classList.remove('hidden');
+                let d = stateData[state].analysis;
+                infoTitle.textContent = d.title; 
+                
+                if (aquariumMode === 'light_dark') {
+                    infoBehavior.textContent = d.lightDarkBehavior;
+                } else if (aquariumMode === 'open_field') {
+                    infoBehavior.textContent = d.openFieldBehavior;
+                } else {
+                    infoBehavior.textContent = d.behavior; // default Tanque Novo
+                }
+                
+                infoMechanism.textContent = d.mechanism; 
+                infoExample.textContent = d.example;
+            }
+
+            function setAquariumMode(mode) {
+                aquariumMode = mode;
+                [btnStandard, btnLightDark, btnOpenField].forEach(b=>b.classList.remove('mode-btn-active'));
+                if(mode==='standard') btnStandard.classList.add('mode-btn-active');
+                if(mode==='light_dark') btnLightDark.classList.add('mode-btn-active');
+                if(mode==='open_field') btnOpenField.classList.add('mode-btn-active');
+                fish.state='normal'; fish.x=originalW/2; fish.y=originalH/2; fish.vx=3; fish.vy=2;
+                analysisTemplate.classList.add('hidden'); quizTemplate.classList.add('hidden'); analysisPlaceholder.classList.remove('hidden');
+            }
+
+            btnStandard.onclick = () => setAquariumMode('standard');
+            btnLightDark.onclick = () => setAquariumMode('light_dark');
+            btnOpenField.onclick = () => setAquariumMode('open_field');
+
+            quizButtons.forEach(btn => {
+                btn.onclick = () => {
+                    let s = btn.dataset.state;
+                    
+                    if (s === 'normal') {
+                        startOverlayAnimation('reset');
+                         fish.state = s; 
+                         fish.isCelebrating=false;
+                         setAquariumMode(aquariumMode); 
+                    } else {
+                        startOverlayAnimation('pipette');
+                        setTimeout(() => {
+                            fish.state = s; fish.isCelebrating=false;
+                            if(s==='epilepsy') { fish.x=originalW/2; fish.y=originalH/2; }
+                            showQuiz(s);
+                        }, 500);
+                    }
+                }
+            });
+
+            // Intro
+            const introNext = document.getElementById('intro-next'), introStart = document.getElementById('intro-start');
+            const introTitle = document.getElementById('intro-title'), introText = document.getElementById('intro-text');
+            let iStep = 0;
+            const steps = [
+                {
+                    t: "Olá, Cientista! 🐠", 
+                    txt: "Eu sou o peixe-<b>ZÉ</b>bra (<i>Danio rerio</i>)! Bem-vindo ao meu laboratório virtual."
+                },
+                {
+                    t: "Por que eu?", 
+                    txt: "Sou um <b>organismo modelo</b> muito importante para a ciência! Partilho 70% do meu DNA com os humanos e muitos dos meus sistemas funcionam de forma parecida. Isso ajuda cientistas de todo o mundo a entender o que está por trás das doenças humanas e procurar possíveis tratamentos."
+                },
+                {
+                    t: "E como funciona?", 
+                    txt: "Para traduzir os comportamentos humanos em peixes-zebra, podemos usar algumas substâncias para induzir estados como ansiedade. Para perceber o que significam, usamos testes onde vemos a minha posição no aquário e o meu padrão de nado. Neste laboratório utilizaremos 3 testes clássicos."
+                },
+                {
+                    t: "Os Testes", 
+                    txt: "<ul class='list-disc pl-5 text-left text-lg space-y-4 leading-relaxed'><li><strong class='text-2xl text-slate-800'>Teste do Tanque Novo:</strong> Avalia a ansiedade vendo como nado num aquário novo (prefiro o fundo ou o topo?).</li><li><strong class='text-2xl text-slate-800'>Teste do Claro/Escuro:</strong> Mede a ansiedade através da minha preferência por áreas escuras em vez de iluminadas.</li><li><strong class='text-2xl text-slate-800'>Teste do Campo Aberto:</strong> Avalia a ansiedade ao ver se eu exploro o centro ou se fico escondido nas bordas de uma arena.</li></ul>"
+                },
+                {
+                    t: "A tua missão:", 
+                    txt: "1. Escolhe um dos testes para aprenderes mais.<br>2. Aplica um <b>Composto</b> no aquário.<br>3. Observa o meu comportamento e responde ao <b>Quiz</b>!<br><br>Vamos começar?"
+                }
+            ];
+            introNext.onclick = () => {
+                iStep++; if(iStep<steps.length) { introTitle.innerHTML=steps[iStep].t; introText.innerHTML=steps[iStep].txt; }
+                if(iStep===steps.length-1) { introNext.classList.add('hidden'); introStart.classList.remove('hidden'); }
+            };
+            
+            function gameLoop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawAquariumBackground();
+                updateFishBehavior();
+                drawFish();
+                drawSparkles();
+                drawOverlayAnimation();
+                requestAnimationFrame(gameLoop);
+            }
+
+            introStart.addEventListener('click', () => {
+                document.getElementById('intro-modal').classList.add('hidden');
+                document.getElementById('game-content').classList.remove('opacity-0');
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                gameLoop(); 
+            });
+        });
+    </script>
+</body>
+</html>
