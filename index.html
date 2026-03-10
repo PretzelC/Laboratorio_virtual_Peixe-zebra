@@ -334,7 +334,7 @@
                     analysis: {
                         title: 'Composto: Sedativo',
                         behavior: 'Há uma depressão motora evidente no tanque novo. O peixe não perde totalmente a consciência, mas nada de forma letárgica, muito mais lenta e demonstra pouca motivação para explorar o aquário.',
-                        mechanism: 'Os sedativos reduzem a atividade do cérebro ao aumentar a ação de um mensageiro químico chamado GABA. Esse mensageiro funciona como uma trava natural do sistema nervoso, diminuindo a atividade dos neurônios e deixando o organismo mais calmo e lento, "sedando" o organismo.',
+                        mechanism: 'Os sedativos reduzem a atividade do cérebro ao aumentar a ação de um mensageiro químico chamado GABA. Esse mensageiro funciona como um sinal inibitório no sistema nervoso, diminuindo a atividade dos neurônios e deixando o organismo mais calmo e lento e tendo, portanto, ação sedativa.',
                         example: 'Barbitúricos, altas doses de Diazepam ou anestésicos em subdose.',
                         lightDarkBehavior: 'A exploração do ambiente claro/escuro cai drasticamente. Ele tende a ficar parado no lado escuro ou a nadar de forma extremamente vagarosa, sem procurar a transição entre os compartimentos.',
                         openFieldBehavior: 'A velocidade média e a distância percorrida diminuem severamente no campo aberto. O peixe nada muito devagar acompanhando as bordas, principalmente.'
@@ -349,7 +349,7 @@
                     analysis: {
                         title: 'Composto: Álcool (Baixa Dose)',
                         behavior: 'O álcool em baixa concentração age de forma muito parecida com um ansiolítico no tanque novo, mas com uma leve euforia associada. O peixe perde a inibição, explora a superfície rapidamente e mostra movimentos mais soltos.',
-                        mechanism: 'Em baixas doses, o álcool aumenta a ação de um mensageiro químico chamado GABA, que reduz a atividade excessiva do cérebro e diminui a sensação de estresse/medo. Ao mesmo tempo, ele estimula a libertação de dopamina, um mensageiro químico ligado ao sistema de recompensa. Essa combinação provoca relaxamento, desinibição e diminuição da ansiedade.',
+                        mechanism: 'Em baixas doses, o álcool aumenta a ação de um mensageiro químico chamado GABA, que reduz a atividade excessiva do cérebro e diminui a sensação de estresse/medo. Ao mesmo tempo, ele estimula a liberação de dopamina, um mensageiro químico ligado ao sistema de recompensa. Essa combinação provoca relaxamento, desinibição e diminuição da ansiedade.',
                         example: 'Etanol em baixa concentração (0.25% - 0.5% na água).',
                         lightDarkBehavior: 'A desinibição bloqueia o instinto de se esconder no escuro. O peixe ignora o medo natural da luz e passa a nadar mais tempo na área iluminada.',
                         openFieldBehavior: 'Em baixa dose, o álcool reduz a ansiedade e a aversão ao espaço aberto. O peixe passa a explorar a zona central da arena com mais frequência, demonstrando menor tigmotaxia (menos atividade na borda). Também pode ocorrer um leve aumento na atividade locomotora, resultando em maior exploração do tanque'
@@ -379,8 +379,8 @@
                     analysis: {
                         title: 'Estado: Crise Epiléptica',
                         behavior: 'O peixe sofre crises convulsivas agudas e evidentes. Ele passa por picos de hiperatividade descontrolada, rodopios (nado em espiral ou "parafuso"), espasmos corporais violentos e completa perda de controle da postura no tanque.',
-                        mechanism: 'Agentes convulsivantes convencionais frequentemente bloqueiam fisicamente os receptores GABA-A, que são responsáveis pelo controle inibitório. Sem essa "trava" neurológica, os neurônios disparam sem limites, criando uma "tempestade elétrica" no cérebro, gerando essa hiperexcitabilidade neuronal e a epilepsia.',
-                        example: 'Pentilenetetrazol (PTZ) — droga padrão para pesquisa de convulsões.',
+                        mechanism: 'Agentes convulsivantes convencionais frequentemente bloqueiam fisicamente os receptores GABA-A, que são responsáveis pelo controle inibitório, ou hiperativam os receptores de Glutamato, que são responsáveis pelo controle excitatório. Com a perda da "trava" neurológica, os neurônios disparam sem limites, criando uma "tempestade elétrica" no cérebro, gerando essa hiperexcitabilidade neuronal e a epilepsia.',
+                        example: 'Pentilenetetrazol (PTZ) — Antagonista (que bloqueia) o receptor GABA-A, droga padrão para pesquisa de convulsões. Ácido caínico - Agonista (que ativa) o receptor Cainato de glutamato',
                         lightDarkBehavior: 'A percepção e a resposta ao ambiente (claro ou escuro) são totalmente perdidas durante a crise. O peixe sofre abalos musculares e nado violento e errático, apresentando convulsões.',
                         openFieldBehavior: 'Durante uma crise epiléptica, o peixe apresenta episódios de hiperatividade seguidos por movimentos convulsivos, com rodopios, espasmos e perda de postura. O comportamento torna-se desorganizado e o peixe deixa de responder normalmente ao ambiente da arena.'
                     },
@@ -1034,6 +1034,7 @@
     </script>
 </body>
 </html>
+
 
 
 
